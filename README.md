@@ -1,5 +1,7 @@
 # Whitted Ray Tracer in Unity3D using compute shader
 
+Unity 2018.3.7f1 (win10 64-bit)
+
 ![DemoScreenShot](Screenshot/1.png)
 
 ## Features:

@@ -201,15 +201,15 @@ float3 Shade(inout Ray ray, RayHit hit)
             fresnel(ray.direction, hit.normal, 1.55, kr);
             bool outside = dot(ray.direction, hit.normal) < 0;
             float3 bias = hit.normal * 0.001f;
-            // compute refraction if it is not a case of total internal reflection
+           
             if (kr > 1 || _PixelOffset.x < kr)
-            {
+            { //total internal reflection
                 ray.origin = hit.position + hit.normal * 0.001f;
                 ray.direction = reflect(ray.direction, hit.normal);
                 ray.energy *= hit.specular;
             }
             else
-            {
+            {//refraction
                 float3 dir = normalize(GetRefraction(ray.direction, hit.normal, 1.55));
                 ray.origin = outside ? hit.position - bias : hit.position + bias;
                 ray.direction = dir;
@@ -218,7 +218,7 @@ float3 Shade(inout Ray ray, RayHit hit)
             }
         }
         else
-        {
+        { //total internal reflection
             ray.origin = hit.position + hit.normal * 0.001f;
             ray.direction = reflect(ray.direction, hit.normal);
             ray.energy *= hit.specular;

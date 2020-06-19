@@ -196,29 +196,41 @@ float3 Shade(inout Ray ray, RayHit hit)
     if (hit.distance < 1.#INF)
     {      
         if (any(hit.refraction))
-        {
+        {//glassy objects
             float kr;
             fresnel(ray.direction, hit.normal, 1.55, kr);
-            bool outside = dot(ray.direction, hit.normal) < 0;
+            bool fromOutside = dot(ray.direction, hit.normal) < 0;
             float3 bias = hit.normal * 0.001f;
            
-            if (kr > 1 || _PixelOffset.x < kr)
+            if (kr > 1)
             { //total internal reflection
                 ray.origin = hit.position + hit.normal * 0.001f;
                 ray.direction = reflect(ray.direction, hit.normal);
                 ray.energy *= hit.specular;
             }
             else
-            {//refraction
-                float3 dir = normalize(GetRefraction(ray.direction, hit.normal, 1.55));
-                ray.origin = outside ? hit.position - bias : hit.position + bias;
-                ray.direction = dir;
-                ray.energy *= hit.refraction;
+            {
+                if ( _PixelOffset.x < kr)
+                {
+                    ray.origin = hit.position + hit.normal * 0.001f;
+                    ray.direction = reflect(ray.direction, hit.normal);
+                    ray.energy *= hit.specular;
+                }
+                else
+                {
+                      //refraction
+                    //float3 dir = normalize(GetRefraction(ray.direction, hit.normal, 1.55));
+                    float3 dir = fromOutside ? normalize(refract(ray.direction, hit.normal, 1 / 1.55)) : normalize(refract(ray.direction, -hit.normal, 1.55));
+                    ray.origin = fromOutside ? hit.position - bias : hit.position + bias;
+                    ray.direction = dir;
+                    ray.energy *= hit.refraction;
+                }
+              
            
             }
         }
         else
-        { //total internal reflection
+        {
             ray.origin = hit.position + hit.normal * 0.001f;
             ray.direction = reflect(ray.direction, hit.normal);
             ray.energy *= hit.specular;
